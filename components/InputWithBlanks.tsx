@@ -17,6 +17,7 @@ const InputWithBlanks = ({
   const placeholders = useRef<string[]>([]);
   const [isMounted, setIsMounted] = useState(false);
 
+  // Extract placeholders and initialize inputValues
   useEffect(() => {
     const matches = template.matchAll(/{(\w+)}/g);
     placeholders.current = Array.from(matches, (m) => m[1]);
@@ -24,10 +25,15 @@ const InputWithBlanks = ({
       placeholders.current.map((p) => [p, ""])
     );
     setInputValues(initialValues);
-    onValuesChange(initialValues);
-    setIsMounted(true); // Mark as mounted after initial setup
+    setIsMounted(true);
   }, [template]);
 
+  // Notify parent when inputValues change
+  useEffect(() => {
+    onValuesChange(inputValues);
+  }, [inputValues, onValuesChange]);
+
+  // Focus first input once mounted
   useEffect(() => {
     if (isMounted && inputsRef.current.length > 0) {
       const firstInputIndex = template
@@ -54,16 +60,9 @@ const InputWithBlanks = ({
     input.style.width = `${width}px`;
   }, []);
 
-  const handleChange = useCallback(
-    (key: string, value: string) => {
-      setInputValues((prev) => {
-        const newValues = { ...prev, [key]: value };
-        onValuesChange(newValues);
-        return newValues;
-      });
-    },
-    [onValuesChange]
-  );
+  const handleChange = useCallback((key: string, value: string) => {
+    setInputValues((prev) => ({ ...prev, [key]: value }));
+  }, []);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => e.key === "Escape" && onClose();

@@ -41,6 +41,7 @@ const NeuronChat = ({ setIsSidebarOpen }: NeuronChatProps) => {
   });
   const [messages, setMessages] = useState<Message[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
   const [method, setMethod] = useState<"llm" | "search" | "execute">("llm");
   const [input, setInput] = useState({
     content: "",
@@ -139,8 +140,13 @@ const NeuronChat = ({ setIsSidebarOpen }: NeuronChatProps) => {
             const data = line.slice(6);
             console.log("data: ", data);
 
+            if (!isStreaming) {
+              setIsStreaming(true);
+            }
+
             if (data === "[DONE]") {
               console.log(currentContent);
+              setIsStreaming(false);
               setExecutionSteps({ steps: [], results: [], error: null });
               break;
             }
@@ -258,6 +264,7 @@ const NeuronChat = ({ setIsSidebarOpen }: NeuronChatProps) => {
                 messages={messages}
                 isLoading={false}
                 isGenerating={isGenerating}
+                isStreaming={isStreaming}
                 userId={authState.user?.id || ""}
                 receiverName={neuron.name}
               />
